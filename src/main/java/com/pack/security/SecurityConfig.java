@@ -68,7 +68,7 @@ public class SecurityConfig {
 
                         // Your APIs
                         .requestMatchers(
-                                "/api/v1/**"
+                                "/api/v1/auth/**"
                         ).permitAll()
 
                         // Other endpoints
