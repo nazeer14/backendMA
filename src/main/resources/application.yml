@@ -1,0 +1,20 @@
+msg91:
+  auth-key: YOUR_AUTH_KEY
+  template-id: YOUR_TEMPLATE_ID
+
+
+aws:
+  s3:
+    bucket-name: team-images-prod
+
+  credentials:
+    access-key: YOUR_ACCESS_KEY
+    secret-key: YOUR_SECRET_KEY
+
+  region: ap-south-1
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
