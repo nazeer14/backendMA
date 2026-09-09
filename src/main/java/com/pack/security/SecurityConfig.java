@@ -1,6 +1,5 @@
 package com.pack.security;
 
-
 import com.pack.utils.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -26,44 +25,116 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-                // Disable CSRF since tokens are handled at the Gateway
+                // -------------------------------------------------
+                // CORS
+                // -------------------------------------------------
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource())
+                )
+
+                // -------------------------------------------------
+                // CSRF
+                // -------------------------------------------------
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Stateless sessions for REST APIs
+                // -------------------------------------------------
+                // Stateless REST API
+                // -------------------------------------------------
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
-                .securityMatcher("/**")
 
-                // All requests are allowed (authorization is done in API Gateway)
+                // -------------------------------------------------
+                // Authorization
+                // -------------------------------------------------
                 .authorizeHttpRequests(auth -> auth
+
+                        // Swagger
                         .requestMatchers(
-                                "/api/v1/**",
-                                "/instances",
-                                "/actuator/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**").permitAll()
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // Actuator
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/actuator/info"
+                        ).permitAll()
+
+                        // Your APIs
+                        .requestMatchers(
+                                "/api/v1/**"
+                        ).permitAll()
+
+                        // Other endpoints
                         .anyRequest().authenticated()
                 )
+
+                // -------------------------------------------------
+                // Disable default authentication
+                // -------------------------------------------------
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+                // -------------------------------------------------
+                // JWT Filter
+                // -------------------------------------------------
+                .addFilterBefore(
+                        jwtAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
+
+
+    // =========================================================
+    // CORS CONFIGURATION
+    // =========================================================
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+
+        configuration.setAllowedOriginPatterns(
+                List.of("*")
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
+        configuration.setExposedHeaders(
+                List.of("Authorization")
+        );
+
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
         return source;
     }
 }
