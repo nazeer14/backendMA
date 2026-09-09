@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,9 +26,15 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
+                .servers(java.util.List.of(
+                        new Server()
+                                .url("https://backendma-production.up.railway.app")
+                                .description("Railway Production Server")
+                ))
                 .addSecurityItem(
                         new SecurityRequirement()
-                                .addList(securitySchemeName))
+                                .addList(securitySchemeName)
+                )
                 .components(
                         new Components()
                                 .addSecuritySchemes(
@@ -37,6 +44,7 @@ public class OpenApiConfig {
                                                 .type(SecurityScheme.Type.HTTP)
                                                 .scheme("bearer")
                                                 .bearerFormat("JWT")
-                                ));
+                                )
+                );
     }
 }
